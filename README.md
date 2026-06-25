@@ -65,6 +65,11 @@ The simulator implements the standard OS Deadlock Detection algorithm:
 3. **Execute** and release resources back to the Work vector.
 4. **Repeat** until no more progress can be made.
 5. **Detect** deadlock if any processes remain unfinished.
+6. output screen shots
+7. <img width="1633" height="1027" alt="Screenshot 2026-05-26 003626" src="https://github.com/user-attachments/assets/f30582c9-75bf-4817-b790-6af58d9dd7e8" />
+<img width="1902" height="912" alt="Screenshot 2026-05-26 011544" src="https://github.com/user-attachments/assets/27cf43c7-a9e4-4790-a9f8-44aad7ffbc22" />
+
+
 
 ---
 
