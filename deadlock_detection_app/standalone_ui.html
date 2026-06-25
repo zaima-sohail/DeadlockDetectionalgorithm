@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadlock Simulator UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --panel-bg: rgba(24, 24, 27, 0.8);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #a1a1aa;
+            --primary: #818cf8;
+            --primary-glow: rgba(129, 140, 248, 0.4);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #f43f5e;
+            --danger-glow: rgba(244, 63, 94, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% -20%, var(--primary-glow), transparent 60%);
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+        }
+
+        header h1 {
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            height: calc(100vh - 80px);
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            backdrop-filter: blur(12px);
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        button:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+
+        button.danger:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            box-shadow: 0 0 15px var(--danger-glow);
+        }
+
+        /* Graph Area */
+        .graph-area {
+            position: relative;
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .node.process {
+            background: rgba(129, 140, 248, 0.2);
+            border: 2px solid var(--primary);
+        }
+        
+        .node.resource {
+            border-radius: 8px;
+            background: rgba(236, 72, 153, 0.2);
+            border: 2px solid #ec4899;
+        }
+
+        .node.deadlocked {
+            border-color: var(--danger);
+            background: rgba(244, 63, 94, 0.2);
+            box-shadow: 0 0 20px var(--danger-glow);
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            25% { transform: translate(-1px, -2px) rotate(-1deg); }
+            50% { transform: translate(-3px, 0px) rotate(1deg); }
+            75% { transform: translate(3px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -1px) rotate(1deg); }
+        }
+
+        svg.edges {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        line {
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            transition: all 0.5s;
+        }
+
+        line.request { stroke: var(--warning); stroke-dasharray: 5; }
+        line.allocated { stroke: var(--success); }
+        line.deadlocked { stroke: var(--danger); stroke-width: 3; }
+
+        /* Logs */
+        .logs {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            background: rgba(0,0,0,0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .log-entry { margin-bottom: 0.5rem; padding-left: 10px; border-left: 2px solid var(--text-muted); }
+        .log-entry.success { border-left-color: var(--success); color: var(--success); }
+        .log-entry.warning { border-left-color: var(--warning); color: var(--warning); }
+        .log-entry.error { border-left-color: var(--danger); color: var(--danger); }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; font-family: 'Fira Code', monospace; font-size: 0.85rem; }
+        th, td { padding: 0.5rem; text-align: center; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-family: 'Outfit', sans-serif; }
+
+        .status-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-running { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-waiting { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-deadlock { background: rgba(244, 63, 94, 0.2); color: var(--danger); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Neural OS: Deadlock Simulator</h1>
+        <div class="status" id="global-status">System State: <span style="color: var(--success)">Safe</span></div>
+    </header>
+
+    <div class="dashboard">
+        <!-- Left Panel: Matrices -->
+        <div class="panel">
+            <h2>Process State Matrix</h2>
+            <div id="process-table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Alloc</th>
+                            <th>Req</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="process-tbody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <h2>Available Resources</h2>
+            <table>
+                <thead><tr><th>R1</th><th>R2</th><th>R3</th></tr></thead>
+                <tbody><tr id="avail-row"><td>3</td><td>3</td><td>2</td></tr></tbody>
+            </table>
+            
+            <div style="margin-top: auto;">
+                <h2>System Analysis</h2>
+                <div id="analysis-result" style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted)">
+                    Ready to run simulation.
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Panel: Visualization -->
+        <div class="panel" style="grid-column: 2; padding: 1rem; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Resource Allocation Graph (RAG)</h2>
+                <div class="controls">
+                    <button id="btn-start" onclick="startSim()">Start</button>
+                    <button id="btn-step" onclick="stepSim()">Step ➔</button>
+                    <button id="btn-reset" class="danger" onclick="resetSim()">Reset</button>
+                </div>
+            </div>
+            
+            <div class="graph-area" id="graph-area">
+                <svg class="edges" id="edges-svg"></svg>
+                <!-- Nodes injected by JS -->
+            </div>
+        </div>
+
+        <!-- Right Panel: Console -->
+        <div class="panel">
+            <h2>Execution Timeline</h2>
+            <div class="logs" id="logs">
+                <div class="log-entry">System initialized. Awaiting commands...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock State
+        const initialState = {
+            processes: [
+                { id: 'P0', alloc: [0,1,0], req: [0,0,0], status: 'running' },
+                { id: 'P1', alloc: [2,0,0], req: [2,0,2], status: 'waiting' },
+                { id: 'P2', alloc: [3,0,3], req: [0,0,0], status: 'running' },
+                { id: 'P3', alloc: [2,1,1], req: [1,0,0], status: 'waiting' },
+                { id: 'P4', alloc: [0,0,2], req: [0,0,2], status: 'waiting' }
+            ],
+            avail: [0,0,0],
+            deadlocked: false
+        };
+
+        let currentState = JSON.parse(JSON.stringify(initialState));
+        let step = 0;
+
+        function renderTable() {
+            const tbody = document.getElementById('process-tbody');
+            tbody.innerHTML = '';
+            currentState.processes.forEach(p => {
+                let badgeClass = 'status-running';
+                if(p.status === 'waiting') badgeClass = 'status-waiting';
+                if(p.status === 'deadlocked') badgeClass = 'status-deadlock';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>[${p.alloc.join(',')}]</td>
+                        <td>[${p.req.join(',')}]</td>
+                        <td><span class="status-badge ${badgeClass}">${p.status.toUpperCase()}</span></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('avail-row').innerHTML = `<td>${currentState.avail[0]}</td><td>${currentState.avail[1]}</td><td>${currentState.avail[2]}</td>`;
+        }
+
+        function renderGraph() {
+            const area = document.getElementById('graph-area');
+            const svg = document.getElementById('edges-svg');
+            
+            // Clear existing nodes except SVG
+            Array.from(area.children).forEach(c => { if(c.tagName !== 'svg') c.remove(); });
+            svg.innerHTML = '';
+
+            const cx = area.clientWidth / 2;
+            const cy = area.clientHeight / 2;
+            const r = Math.min(cx, cy) - 60;
+
+            const nodes = [];
+            
+            // Draw processes in a circle
+            currentState.processes.forEach((p, i) => {
+                const angle = (i / currentState.processes.length) * Math.PI * 2 - Math.PI/2;
+                const nx = cx + r * Math.cos(angle);
+                const ny = cy + r * Math.sin(angle);
+                
+                const el = document.createElement('div');
+                el.className = `node process ${p.status === 'deadlocked' ? 'deadlocked' : ''}`;
+                el.style.left = `${nx - 25}px`;
+                el.style.top = `${ny - 25}px`;
+                el.innerText = p.id;
+                area.appendChild(el);
+                
+                nodes.push({ id: p.id, x: nx, y: ny, type: 'process' });
+            });
+
+            // Draw resources in center
+            ['R1', 'R2', 'R3'].forEach((r_id, i) => {
+                const nx = cx + (i - 1) * 80;
+                const ny = cy;
+                const el = document.createElement('div');
+                el.className = 'node resource';
+                el.style.left = `${nx - 25}px`;
+                el.style.top = `${ny - 25}px`;
+                el.innerText = r_id;
+                area.appendChild(el);
+                nodes.push({ id: r_id, x: nx, y: ny, type: 'resource' });
+            });
+
+            // Draw dummy edges for demonstration
+            currentState.processes.forEach(p => {
+                if (p.alloc[0] > 0) drawEdge(svg, nodes, 'R1', p.id, 'allocated');
+                if (p.req[0] > 0) drawEdge(svg, nodes, p.id, 'R1', p.status === 'deadlocked' ? 'deadlocked' : 'request');
+            });
+        }
+
+        function drawEdge(svg, nodes, fromId, toId, type) {
+            const from = nodes.find(n => n.id === fromId);
+            const to = nodes.find(n => n.id === toId);
+            if(!from || !to) return;
+            
+            // Add marker definition
+            if(!document.getElementById('arrowhead')) {
+                svg.innerHTML += `
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="25" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--text-muted)" />
+                        </marker>
+                    </defs>
+                `;
+            }
+
+            svg.innerHTML += `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}" class="${type}" marker-end="url(#arrowhead)"/>`;
+        }
+
+        function logMsg(msg, type='normal') {
+            const logs = document.getElementById('logs');
+            logs.innerHTML += `<div class="log-entry ${type}">[Step ${step}] ${msg}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // Sim Control
+        function startSim() {
+            logMsg("Simulation Started. Checking for deadlocks...", "warning");
+        }
+
+        function stepSim() {
+            step++;
+            if(step === 1) {
+                logMsg("P0 has completed. Releasing resources...", "success");
+                currentState.avail = [0, 1, 0];
+                currentState.processes[0].alloc = [0,0,0];
+                currentState.processes[0].status = 'finished';
+            } else if (step === 2) {
+                logMsg("P2 has completed. Releasing resources...", "success");
+                currentState.avail = [3, 1, 3];
+                currentState.processes[2].alloc = [0,0,0];
+                currentState.processes[2].status = 'finished';
+            } else if (step === 3) {
+                logMsg("Checking P1, P3, P4... Request exceeds available.", "error");
+                currentState.processes[1].status = 'deadlocked';
+                currentState.processes[3].status = 'deadlocked';
+                currentState.processes[4].status = 'deadlocked';
+                document.getElementById('global-status').innerHTML = 'System State: <span style="color: var(--danger)">DEADLOCKED</span>';
+                document.getElementById('analysis-result').innerHTML = '<span style="color: var(--danger); font-weight:bold;">DEADLOCK DETECTED!</span><br>Processes P1, P3, P4 are caught in a circular wait.';
+                logMsg("CRITICAL: Deadlock detected!", "error");
+            } else {
+                logMsg("Simulation complete. Reset to try again.");
+            }
+            renderTable();
+            renderGraph();
+        }
+
+        function resetSim() {
+            step = 0;
+            currentState = JSON.parse(JSON.stringify(initialState));
+            document.getElementById('global-status').innerHTML = 'System State: <span style="color: var(--success)">Safe</span>';
+            document.getElementById('analysis-result').innerHTML = 'Ready to run simulation.';
+            document.getElementById('logs').innerHTML = '<div class="log-entry">System reset.</div>';
+            renderTable();
+            renderGraph();
+        }
+
+        // Init
+        setTimeout(() => {
+            renderTable();
+            renderGraph();
+        }, 100);
+        
+        window.addEventListener('resize', renderGraph);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+    --primary: #3B82F6;
+    --primary-hover: #2563EB;
+    --primary-glow: rgba(59, 130, 246, 0.5);
+    --secondary: #06B6D4;
+    --secondary-glow: rgba(6, 182, 212, 0.5);
+    --background: #0F172A;
+    --surface: rgba(30, 41, 59, 0.8); /* Slate Dark with slight transparency */
+    --surface-border: #334155;
+    --text: #F8FAFC;
+    --text-muted: #94A3B8;
+    --success: #22C55E;
+    --success-glow: rgba(34, 197, 94, 0.3);
+    --error: #EF4444;
+    --error-glow: rgba(239, 68, 68, 0.3);
+    --warning: #F59E0B;
+    
+    /* Process States */
+    --state-running: #22C55E;
+    --state-waiting: #F59E0B;
+    --state-blocked: #EF4444;
+    --state-idle: #64748B;
+    --state-allocated: #3B82F6;
+    --state-deadlocked: #FF004D;
+
+    --font-sans: 'Outfit', sans-serif;
+    --font-mono: 'Fira Code', monospace;
+}
+
+/* Base Body Styling with Animated Grid Background */
+.stApp {
+    background-color: var(--background);
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center center;
+    color: var(--text);
+    font-family: var(--font-sans);
+}
+
+/* Subtle glow behind the app */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 60%);
+    filter: blur(100px);
+    z-index: -1;
+    opacity: 0.5;
+    animation: pulseGlow 8s infinite alternate;
+}
+
+.stApp::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, var(--secondary-glow) 0%, transparent 60%);
+    filter: blur(120px);
+    z-index: -1;
+    opacity: 0.4;
+    animation: pulseGlow 10s infinite alternate-reverse;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 0.4; }
+    100% { transform: scale(1.1); opacity: 0.6; }
+}
+
+/* Typography Enhancements */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.02em;
+}
+
+code {
+    font-family: var(--font-mono) !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e2e8f0 !important;
+}
+
+/* Advanced Glassmorphism Cards */
+.glass-card {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--surface-border);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient Text with Animation */
+.gradient-text {
+    background: linear-gradient(to right, #818cf8, #c084fc, #ec4899, #818cf8);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    animation: shine 5s linear infinite;
+}
+
+@keyframes shine {
+    to { background-position: 300% center; }
+}
+
+/* Supercharged Metrics */
+[data-testid="stMetricValue"] {
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    font-family: var(--font-mono);
+    background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(255,255,255,0.1);
+}
+
+[data-testid="stMetricLabel"] {
+    color: var(--text-muted) !important;
+    font-size: 0.95rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600 !important;
+}
+
+[data-testid="stMetric"] {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--surface-border);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+[data-testid="stMetric"]:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+    transform: translateY(-2px);
+}
+
+/* Beautiful Buttons */
+.stButton>button {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%) !important;
+    background-color: var(--primary) !important;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    padding: 0.6rem 1.5rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 15px var(--primary-glow) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.stButton>button::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+    transform: skewX(-20deg);
+    transition: 0.5s;
+}
+
+.stButton>button:hover::after {
+    left: 150%;
+}
+
+.stButton>button:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px var(--primary-glow) !important;
+    border-color: rgba(255,255,255,0.4) !important;
+}
+
+.stButton>button:active {
+    transform: translateY(1px);
+}
+
+/* Data Editor / Dataframes */
+[data-testid="stDataFrame"], [data-testid="stDataEditor"] {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    overflow: hidden;
+}
+th {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+}
+td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Sidebar Customization */
+[data-testid="stSidebar"] {
+    background: rgba(9, 9, 11, 0.8) !important;
+    backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Step Cards for Dry Run */
+.step-card {
+    border-left: 4px solid var(--primary);
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    padding: 1.2rem;
+    border-radius: 0 16px 16px 0;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.step-card::before {
+    content: '';
+    position: absolute;
+    left: -4px; top: 0; height: 100%; width: 4px;
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary);
+}
+
+.step-success { 
+    border-left-color: var(--success); 
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+}
+.step-success::before {
+    background: var(--success);
+    box-shadow: 0 0 10px var(--success);
+}
+
+.step-error { 
+    border-left-color: var(--error); 
+    background: linear-gradient(90deg, rgba(244, 63, 94, 0.1) 0%, transparent 100%);
+}
+.step-error::before {
+    background: var(--error);
+    box-shadow: 0 0 10px var(--error);
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 1rem;
+    background-color: rgba(0,0,0,0.2);
+    padding: 0.5rem;
+    border-radius: 12px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 44px;
+    padding: 0 1.5rem;
+    background-color: transparent;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stTabs [aria-selected="true"] {
+    color: white !important;
+    background: var(--primary) !important;
+    box-shadow: 0 4px 12px var(--primary-glow);
+    border-bottom: none !important;
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    color: var(--primary) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.streamlit-expanderHeader:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.streamlit-expanderContent {
+    border: 1px solid rgba(255,255,255,0.05);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 1.5rem !important;
+    background: rgba(0,0,0,0.1);
+}
+
+/* Success/Error/Info Boxes */
+div[data-testid="stAlert"] {
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    backdrop-filter: blur(10px);
+}
+div[data-baseweb="toast"] {
+    border-radius: 12px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Animations */
+@keyframes fadeInSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeInSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Make inputs look sleek */
+input, textarea, select {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: white !important;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px var(--primary-glow) !important;
+}
