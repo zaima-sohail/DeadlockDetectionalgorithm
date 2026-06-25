@@ -67,5 +67,5 @@ The simulator implements the standard OS Deadlock Detection algorithm:
 5. **Detect** deadlock if any processes remain unfinished.
 
 ---
-Built with ❤️ by Senior OS Expert & Antigravity AI.
+
 
